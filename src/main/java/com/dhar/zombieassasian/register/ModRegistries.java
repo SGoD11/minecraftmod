@@ -2,6 +2,7 @@ package com.dhar.zombieassasian.register;
 
 import com.dhar.zombieassasian.ZombieAssasianMod;
 import com.dhar.zombieassasian.entity.BurnedArrowEntity;
+import com.dhar.zombieassasian.item.CookedDiamondAxeItem;
 import com.dhar.zombieassasian.item.CookedShieldItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -33,6 +34,13 @@ public class ModRegistries {
     // durability(336) matches vanilla shield's durability exactly.
     public static final RegistryObject<Item> COOKED_SHIELD = ITEMS.register("cooked_shield",
             () -> new CookedShieldItem(new Item.Properties().durability(336)));
+
+    // --- Feature 3: Cooked Diamond Axe ---
+    // No explicit durability call needed — AxeItem/DiggerItem/TieredItem's
+    // constructor chain sets durability from the tier (Tiers.DIAMOND)
+    // automatically.
+    public static final RegistryObject<Item> COOKED_DIAMOND_AXE = ITEMS.register("cooked_diamond_axe",
+            () -> new CookedDiamondAxeItem(new Item.Properties()));
 
     public static final RegistryObject<EntityType<BurnedArrowEntity>> BURNED_ARROW =
             ENTITY_TYPES.register("burned_arrow",

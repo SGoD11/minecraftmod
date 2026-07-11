@@ -1,0 +1,9 @@
+{
+  "type": "minecraft:smelting",
+  "ingredient": {
+    "item": "minecraft:diamond_axe"
+  },
+  "result": "zombieassasian:cooked_diamond_axe",
+  "experience": 1.0,
+  "cookingtime": 200
+}

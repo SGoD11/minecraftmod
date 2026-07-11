@@ -1,7 +1,9 @@
 package com.dhar.zombieassasian.handler;
 
+import com.dhar.zombieassasian.item.CookedDiamondAxeItem;
 import com.dhar.zombieassasian.ZombieAssasianMod;
 import net.minecraft.world.entity.EquipmentSlot;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
@@ -13,7 +15,6 @@ import net.minecraftforge.event.entity.EntityJoinLevelEvent;
 import net.minecraftforge.event.entity.living.LivingChangeTargetEvent;
 import net.minecraftforge.event.entity.living.LivingEvent;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraft.world.entity.LivingEntity;
 
 import java.lang.reflect.Field;
 
@@ -74,7 +75,7 @@ public class ZombieBehaviorHandler {
                     zombie,
                     Monster.class,
                     10,     // how often it re-checks for a target
-                    true,   // must see target (line of sight)
+                    true,   // check line of sight
                     false,  // don't require target to already be provoked
                     (LivingEntity target) -> target != zombie && !(target instanceof Zombie)
             ));
@@ -105,20 +106,18 @@ public class ZombieBehaviorHandler {
      * Disables sun-burning for plain Zombies.
      *
      * Limitation (flagging honestly, not hiding it): vanilla applies sun
-     * fire and any other fire source (lava, flint & steel, fire charges,
-     * a burning weapon, etc.) through the exact same mechanism, so there is
-     * no clean built-in way to tell them apart without Mixins. This handler
-     * uses a heuristic — only clears fire when it's daytime, the zombie is
-     * NOT in water/rain, and it has no helmet (all 3 are exactly vanilla's
-     * own conditions for sun-burning). Edge case: if some other feature we
-     * build later also sets a Zombie on fire during a sunny, dry moment,
-     * this will incorrectly extinguish it too.
+     * fire and any other fire source through the same mechanism, so there's
+     * no built-in way to tell them apart without Mixins. This uses a
+     * heuristic — only clears fire when it's daytime, the zombie is NOT in
+     * water/rain, and has no helmet (vanilla's own sun-burn conditions).
      *
-     * When we build the Cooked Diamond Axe (Feature 3, "set living entity
-     * on fire on hit"), we'll set a short-lived NBT flag on the target via
-     * `entity.getPersistentData()` right when the axe hits, and check for
-     * that flag here before clearing — so intentional fire is protected.
-     * That flag doesn't exist yet, so it's not referenced below yet.
+     * Feature 3 (Cooked Diamond Axe) intentionally sets zombies on fire on
+     * hit, which would otherwise collide with this same heuristic during
+     * daytime. To prevent that, CookedDiamondAxeItem tags its target with
+     * CookedDiamondAxeItem.INTENTIONAL_FIRE_TAG in persistent data — we
+     * check for that tag here and skip clearing if it's present. The tag is
+     * removed once the zombie stops being on fire, so it doesn't linger and
+     * protect unrelated future fires.
      */
     @SubscribeEvent
     public void onZombieTick(LivingEvent.LivingTickEvent event) {
@@ -126,8 +125,18 @@ public class ZombieBehaviorHandler {
             return;
         }
         Zombie zombie = (Zombie) event.getEntity();
+
         if (!zombie.isOnFire()) {
+            // Not on fire — clean up the tag if it's still lingering from a
+            // previous intentional fire that has since burned out.
+            if (zombie.getPersistentData().contains(CookedDiamondAxeItem.INTENTIONAL_FIRE_TAG)) {
+                zombie.getPersistentData().remove(CookedDiamondAxeItem.INTENTIONAL_FIRE_TAG);
+            }
             return;
+        }
+
+        if (zombie.getPersistentData().getBoolean(CookedDiamondAxeItem.INTENTIONAL_FIRE_TAG)) {
+            return; // Cooked Diamond Axe fire — protected, let it burn out naturally.
         }
 
         Level level = zombie.level();
