@@ -3,6 +3,9 @@ package com.dhar.zombieassasian;
 import com.dhar.zombieassasian.client.BurnedArrowRenderer;
 import com.dhar.zombieassasian.client.ShieldRenderHandler;
 import com.dhar.zombieassasian.client.renderer.DisplayBlockEntityRenderer;
+import com.dhar.zombieassasian.handler.DispenserRegistry;
+import com.dhar.zombieassasian.handler.LaserTrapHandler;
+import com.dhar.zombieassasian.handler.LongRangedBucketHandler;
 import com.dhar.zombieassasian.handler.MultiToolHandler;
 import com.dhar.zombieassasian.handler.ShieldReflectHandler;
 import com.dhar.zombieassasian.handler.SpyglassVillageHandler;
@@ -50,6 +53,9 @@ public class ZombieAssasianMod {
         MinecraftForge.EVENT_BUS.register(new ShieldReflectHandler());
         MinecraftForge.EVENT_BUS.register(new MultiToolHandler());
         MinecraftForge.EVENT_BUS.register(new SpyglassVillageHandler());
+        MinecraftForge.EVENT_BUS.register(new LongRangedBucketHandler());
+        MinecraftForge.EVENT_BUS.register(new DispenserRegistry());
+        MinecraftForge.EVENT_BUS.register(new LaserTrapHandler());
 
         LOGGER.info("{} initialized", MODID);
     }

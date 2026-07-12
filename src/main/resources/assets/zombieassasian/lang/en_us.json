@@ -2,5 +2,8 @@
   "item.zombieassasian.cooked_shield": "Cooked Shield",
   "item.zombieassasian.cooked_diamond_axe": "Cooked Diamond Axe",
   "item.zombieassasian.wooden_multitool": "Wooden Multitool",
-  "block.zombieassasian.display_block": "Display Pedestal"
+  "item.zombieassasian.long_ranged_bucket": "Long-Ranged Bucket",
+  "item.zombieassasian.long_ranged_bucket_filled": "Long-Ranged Bucket",
+  "block.zombieassasian.display_block": "Display Pedestal",
+  "block.zombieassasian.trap_room_core": "Trap Room Core"
 }

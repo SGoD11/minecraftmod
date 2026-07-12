@@ -2,11 +2,15 @@ package com.dhar.zombieassasian.register;
 
 import com.dhar.zombieassasian.ZombieAssasianMod;
 import com.dhar.zombieassasian.block.DisplayBlock;
+import com.dhar.zombieassasian.block.TrapRoomCoreBlock;
 import com.dhar.zombieassasian.blockentity.DisplayBlockEntity;
+import com.dhar.zombieassasian.blockentity.TrapRoomCoreBlockEntity;
 import com.dhar.zombieassasian.entity.BurnedArrowEntity;
 //import com.dhar.zombieassasian.entity.CutePuppyEntity;
 import com.dhar.zombieassasian.item.CookedDiamondAxeItem;
 import com.dhar.zombieassasian.item.CookedShieldItem;
+import com.dhar.zombieassasian.item.LongRangedBucketFilledItem;
+import com.dhar.zombieassasian.item.LongRangedBucketItem;
 import com.dhar.zombieassasian.item.MultiToolItem;
 import net.minecraft.world.entity.EntityType;
 import net.minecraft.world.entity.MobCategory;
@@ -91,6 +95,27 @@ public class ModRegistries {
     public static final RegistryObject<BlockEntityType<DisplayBlockEntity>> DISPLAY_BLOCK_ENTITY =
             BLOCK_ENTITY_TYPES.register("display_block",
                     () -> BlockEntityType.Builder.of(DisplayBlockEntity::new, DISPLAY_BLOCK.get()).build(null));
+
+    // --- Feature 8: Trap Room ---
+    public static final RegistryObject<Block> TRAP_ROOM_CORE = BLOCKS.register("trap_room_core",
+            () -> new TrapRoomCoreBlock(net.minecraft.world.level.block.state.BlockBehaviour.Properties.of()
+                    .mapColor(MapColor.COLOR_RED)
+                    .strength(3.0F)
+                    .noOcclusion()));
+
+    public static final RegistryObject<Item> TRAP_ROOM_CORE_ITEM = ITEMS.register("trap_room_core",
+            () -> new BlockItem(TRAP_ROOM_CORE.get(), new Item.Properties()));
+
+    public static final RegistryObject<BlockEntityType<TrapRoomCoreBlockEntity>> TRAP_ROOM_CORE_ENTITY =
+            BLOCK_ENTITY_TYPES.register("trap_room_core",
+                    () -> BlockEntityType.Builder.of(TrapRoomCoreBlockEntity::new, TRAP_ROOM_CORE.get()).build(null));
+
+    // --- Feature 11: Long-Ranged Bucket ---
+    public static final RegistryObject<Item> LONG_RANGED_BUCKET = ITEMS.register("long_ranged_bucket",
+            () -> new LongRangedBucketItem(new Item.Properties().stacksTo(1)));
+
+    public static final RegistryObject<Item> LONG_RANGED_BUCKET_FILLED = ITEMS.register("long_ranged_bucket_filled",
+            () -> new LongRangedBucketFilledItem(new Item.Properties().stacksTo(1)));
 
     /**
      * Call this once from the main mod class constructor. Hooks every
