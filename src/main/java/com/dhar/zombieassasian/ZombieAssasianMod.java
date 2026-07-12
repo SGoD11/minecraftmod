@@ -2,9 +2,13 @@ package com.dhar.zombieassasian;
 
 import com.dhar.zombieassasian.client.BurnedArrowRenderer;
 import com.dhar.zombieassasian.client.ShieldRenderHandler;
+import com.dhar.zombieassasian.client.renderer.DisplayBlockEntityRenderer;
+import com.dhar.zombieassasian.handler.MultiToolHandler;
 import com.dhar.zombieassasian.handler.ShieldReflectHandler;
+import com.dhar.zombieassasian.handler.SpyglassVillageHandler;
 import com.dhar.zombieassasian.handler.ZombieBehaviorHandler;
 import com.dhar.zombieassasian.register.ModRegistries;
+import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -44,17 +48,20 @@ public class ZombieAssasianMod {
         // damage, targeting, right-click, etc. all fire here.
         MinecraftForge.EVENT_BUS.register(new ZombieBehaviorHandler());
         MinecraftForge.EVENT_BUS.register(new ShieldReflectHandler());
+        MinecraftForge.EVENT_BUS.register(new MultiToolHandler());
+        MinecraftForge.EVENT_BUS.register(new SpyglassVillageHandler());
 
         LOGGER.info("{} initialized", MODID);
     }
 
     /**
-     * Client-only setup — tells the game HOW to draw entities we register.
-     * Without this, any entity type with no renderer registered crashes
-     * the game the moment one exists in a loaded chunk.
+     * Client-only setup — tells the game HOW to draw entities/block entities
+     * we register. Without this, anything with no renderer registered
+     * crashes the game the moment one exists in a loaded chunk.
      */
     private void clientSetup(FMLClientSetupEvent event) {
         EntityRenderers.register(ModRegistries.BURNED_ARROW.get(), BurnedArrowRenderer::new);
+        BlockEntityRenderers.register(ModRegistries.DISPLAY_BLOCK_ENTITY.get(), DisplayBlockEntityRenderer::new);
         MinecraftForge.EVENT_BUS.register(new ShieldRenderHandler());
     }
 }
