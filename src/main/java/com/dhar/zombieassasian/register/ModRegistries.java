@@ -9,6 +9,7 @@ import com.dhar.zombieassasian.entity.BurnedArrowEntity;
 //import com.dhar.zombieassasian.entity.CutePuppyEntity;
 import com.dhar.zombieassasian.item.CookedDiamondAxeItem;
 import com.dhar.zombieassasian.item.CookedShieldItem;
+import com.dhar.zombieassasian.item.DimensionalKeyItem;
 import com.dhar.zombieassasian.item.LongRangedBucketFilledItem;
 import com.dhar.zombieassasian.item.LongRangedBucketItem;
 import com.dhar.zombieassasian.item.MultiToolItem;
@@ -116,6 +117,10 @@ public class ModRegistries {
 
     public static final RegistryObject<Item> LONG_RANGED_BUCKET_FILLED = ITEMS.register("long_ranged_bucket_filled",
             () -> new LongRangedBucketFilledItem(new Item.Properties().stacksTo(1)));
+
+    // --- Feature 10: New Dimension ---
+    public static final RegistryObject<Item> DIMENSIONAL_KEY = ITEMS.register("dimensional_key",
+            () -> new DimensionalKeyItem(new Item.Properties().stacksTo(1)));
 
     /**
      * Call this once from the main mod class constructor. Hooks every

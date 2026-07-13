@@ -10,6 +10,7 @@ import com.dhar.zombieassasian.handler.MultiToolHandler;
 import com.dhar.zombieassasian.handler.ShieldReflectHandler;
 import com.dhar.zombieassasian.handler.SpyglassVillageHandler;
 import com.dhar.zombieassasian.handler.ZombieBehaviorHandler;
+import com.dhar.zombieassasian.register.ModCreativeTabs;
 import com.dhar.zombieassasian.register.ModRegistries;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderers;
 import net.minecraft.client.renderer.entity.EntityRenderers;
@@ -45,6 +46,7 @@ public class ZombieAssasianMod {
         // items, entities, blocks, etc.) — different from the bus below.
         IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         ModRegistries.register(modEventBus);
+        ModCreativeTabs.register(modEventBus);
         modEventBus.addListener(this::clientSetup);
 
         // MinecraftForge.EVENT_BUS is the "game event" bus — entity ticks,

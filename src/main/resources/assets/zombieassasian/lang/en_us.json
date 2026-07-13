@@ -4,6 +4,8 @@
   "item.zombieassasian.wooden_multitool": "Wooden Multitool",
   "item.zombieassasian.long_ranged_bucket": "Long-Ranged Bucket",
   "item.zombieassasian.long_ranged_bucket_filled": "Long-Ranged Bucket",
+  "item.zombieassasian.dimensional_key": "Dimensional Key",
   "block.zombieassasian.display_block": "Display Pedestal",
-  "block.zombieassasian.trap_room_core": "Trap Room Core"
+  "block.zombieassasian.trap_room_core": "Trap Room Core",
+  "itemGroup.zombieassasian.main": "Zombie Assisinate"
 }
