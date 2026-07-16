@@ -5,6 +5,7 @@ import com.dhar.zombieassasian.ZombieAssasianMod;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.Mob;
+import net.minecraft.world.entity.NeutralMob;
 import net.minecraft.world.entity.ai.goal.GoalSelector;
 import net.minecraft.world.entity.ai.goal.target.NearestAttackableTargetGoal;
 import net.minecraft.world.entity.monster.Monster;
@@ -67,17 +68,25 @@ public class ZombieBehaviorHandler {
             // "attack nearest player" goal along with everything else).
             targetSelector.removeAllGoals(goal -> true);
 
-            // Add a fresh goal: attack the nearest hostile mob (Monster),
-            // excluding itself and other Zombies (so zombies don't fight
-            // each other — remove the "!= Zombie" check below if you want
-            // zombie-on-zombie violence instead).
-            targetSelector.addGoal(1, new NearestAttackableTargetGoal<Monster>(
+            // Add a fresh goal: attack the nearest hostile-or-aggressive mob.
+            // Target type is Mob.class (broad) because NeutralMob-implementing
+            // animals (Polar Bear, Wolf, Bee, etc.) are Animal subclasses, NOT
+            // Monster subclasses — Monster.class alone would miss them
+            // entirely, which was the bug. The predicate below narrows it back
+            // down to only Monster + NeutralMob instances, excluding Players,
+            // Zombies (no cannibalism), and plain passive animals (cows,
+            // sheep, pigs, chickens, etc. are Animal but NOT NeutralMob, so
+            // they're correctly excluded).
+            targetSelector.addGoal(1, new NearestAttackableTargetGoal<Mob>(
                     zombie,
-                    Monster.class,
+                    Mob.class,
                     10,     // how often it re-checks for a target
                     true,   // check line of sight
                     false,  // don't require target to already be provoked
-                    (LivingEntity target) -> target != zombie && !(target instanceof Zombie)
+                    (LivingEntity target) -> target != zombie
+                            && !(target instanceof Zombie)
+                            && !(target instanceof Player)
+                            && (target instanceof Monster || target instanceof NeutralMob)
             ));
         } catch (ReflectiveOperationException e) {
             // If this ever fails (e.g. a Forge/Minecraft update renames the
