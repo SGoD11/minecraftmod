@@ -126,6 +126,14 @@ public class SpyglassVillageHandler {
         }
 
         BlockPos structurePos = result.getFirst();
+
+        // Force that chunk to fully generate before asking for its height —
+        // without this, if the village is in a chunk that hasn't generated
+        // yet, getHeight() can return garbage (e.g. build limit or 0),
+        // dropping the player somewhere broken instead of on the ground.
+        level.getChunk(structurePos.getX() >> 4, structurePos.getZ() >> 4,
+                net.minecraft.world.level.chunk.ChunkStatus.FULL, true);
+
         int surfaceY = level.getHeight(Heightmap.Types.WORLD_SURFACE, structurePos.getX(), structurePos.getZ());
 
         player.teleportTo(level,

@@ -36,7 +36,7 @@ public class TrapRoomCoreBlockEntity extends BlockEntity {
 
     private static final int ROOM_HALF_WIDTH = 5; // 5 + 5 = 10 blocks wide on each horizontal axis
     private static final int ROOM_HEIGHT = 5;
-    private static final int COOLDOWN_TICKS = 100; // 5 seconds between anvil drops per player
+    private static final int COOLDOWN_TICKS = 30; // 1.5 seconds between anvil drops per player (20 ticks/sec)
     private static final int ANVIL_SPAWN_HEIGHT_ABOVE_PLAYER = 6;
 
     private final Map<UUID, Integer> playerCooldowns = new HashMap<>();
