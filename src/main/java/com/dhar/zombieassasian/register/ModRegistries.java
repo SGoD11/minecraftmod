@@ -6,7 +6,7 @@ import com.dhar.zombieassasian.block.TrapRoomCoreBlock;
 import com.dhar.zombieassasian.blockentity.DisplayBlockEntity;
 import com.dhar.zombieassasian.blockentity.TrapRoomCoreBlockEntity;
 import com.dhar.zombieassasian.entity.BurnedArrowEntity;
-//import com.dhar.zombieassasian.entity.CutePuppyEntity;
+import com.dhar.zombieassasian.entity.CutePuppyEntity;
 import com.dhar.zombieassasian.item.CookedDiamondAxeItem;
 import com.dhar.zombieassasian.item.CookedShieldItem;
 import com.dhar.zombieassasian.item.DimensionalKeyItem;
@@ -67,17 +67,15 @@ public class ModRegistries {
                             .sized(0.5f, 0.5f)
                             .build("burned_arrow"));
 
-    // --- Feature 4: Cute Puppy — INTENTIONALLY NOT REGISTERED RIGHT NOW ---
-    // Set aside per your request while we stabilize other features. The
-    // entity/model/renderer code still exists under entity/ and
-    // client/renderer/ — just not hooked into the game yet. Uncomment when
-    // ready to resume:
-    //
-    // public static final RegistryObject<EntityType<CutePuppyEntity>> CUTE_PUPPY =
-    //         ENTITY_TYPES.register("cute_puppy",
-    //                 () -> EntityType.Builder.of(CutePuppyEntity::new, MobCategory.CREATURE)
-    //                         .sized(0.6f, 0.7f)
-    //                         .build("cute_puppy"));
+    // --- Feature 4: Cute Puppy (as a normal spawnable mob for now — loyalty/defense behavior comes next) ---
+    public static final RegistryObject<EntityType<CutePuppyEntity>> CUTE_PUPPY =
+            ENTITY_TYPES.register("cute_puppy",
+                    () -> EntityType.Builder.of(CutePuppyEntity::new, MobCategory.CREATURE)
+                            .sized(0.6f, 0.7f)
+                            .build("cute_puppy"));
+
+    public static final RegistryObject<Item> CUTE_PUPPY_SPAWN_EGG = ITEMS.register("cute_puppy_spawn_egg",
+            () -> new net.minecraftforge.common.ForgeSpawnEggItem(CUTE_PUPPY, 0xF5DEB3, 0x8B4513, new Item.Properties()));
 
     // --- Feature 12: Multi-Tool ---
     public static final RegistryObject<Item> WOODEN_MULTITOOL = ITEMS.register("wooden_multitool",

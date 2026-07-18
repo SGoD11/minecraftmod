@@ -32,6 +32,7 @@ public class ModCreativeTabs {
                         output.accept(ModRegistries.DISPLAY_BLOCK_ITEM.get());
                         output.accept(ModRegistries.TRAP_ROOM_CORE_ITEM.get());
                         output.accept(ModRegistries.DIMENSIONAL_KEY.get());
+                        output.accept(ModRegistries.CUTE_PUPPY_SPAWN_EGG.get());
                         // Intentionally NOT adding LONG_RANGED_BUCKET_FILLED or
                         // BURNED_ARROW — those are only meant to appear as a
                         // result of gameplay (filling the bucket, reflecting an
