@@ -1,16 +1,11 @@
 {
   "type": "zombieassasian:diamond_realm",
   "generator": {
-    "type": "minecraft:flat",
-    "settings": {
-      "biome": "zombieassasian:diamond_biome",
-      "lakes": false,
-      "features": false,
-      "layers": [
-        { "block": "minecraft:bedrock", "height": 1 },
-        { "block": "minecraft:diamond_block", "height": 50 },
-        { "block": "minecraft:netherite_block", "height": 5 }
-      ]
-    }
+    "type": "minecraft:noise",
+    "biome_source": {
+      "type": "minecraft:fixed",
+      "biome": "zombieassasian:diamond_biome"
+    },
+    "settings": "zombieassasian:diamond_realm"
   }
 }

@@ -31,6 +31,7 @@ minecraft {
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
             property 'geckolib.disable_examples', 'true'
+            jvmArgs '-Xmx3G', '-Xms1G', '-XX:+UseG1GC', '-XX:MaxGCPauseMillis=200'
             mods {
                 zombieassasian {
                     source sourceSets.main

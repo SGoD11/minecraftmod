@@ -18,27 +18,25 @@ import java.util.Set;
 /**
  * FEATURE 10 — New Dimension (entry point)
  * -------------------------------------------
- * A full custom portal-frame system (like the Nether's obsidian+flint&steel
- * frame detection) is a significantly larger, higher-risk undertaking on
- * its own. Given the priority on correctness here, this item is a
- * deliberately simple, low-risk way to enter/exit the dimension instead:
- * right-click to toggle between the Overworld and the Diamond Realm.
+ * Right-click to toggle between the Overworld and the Diamond Realm.
  *
- * DIAMOND_REALM is built the exact same way vanilla itself builds
- * Level.OVERWORLD / Level.NETHER (ResourceKey.create with Registries.DIMENSION)
- * — copying that proven pattern instead of inventing a new one.
+ * The Diamond Realm uses a noise generator (same shape as the Overworld),
+ * so terrain height varies. We spawn the player at X=0, Z=0 high enough
+ * (Y=100) that they always land on top of the terrain, then fall naturally.
+ * The surface rules replace stone/dirt/grass with diamond_block/netherite_block,
+ * giving full Overworld-shaped terrain in diamond and netherite textures.
  *
- * Landing spot (0, 57, 0) is calculated from the dimension's flat layers:
- * 1 bedrock + 50 diamond_block + 5 netherite_block = top of the terrain at
- * Y=56, so Y=57 stands the player on solid ground right on the netherite
- * layer.
+ * DIAMOND_REALM is built the exact same way vanilla builds Level.OVERWORLD /
+ * Level.NETHER (ResourceKey.create with Registries.DIMENSION).
  */
 public class DimensionalKeyItem extends Item {
 
     private static final ResourceKey<Level> DIAMOND_REALM = ResourceKey.create(
             Registries.DIMENSION, new ResourceLocation("zombieassasian", "diamond_realm"));
 
-    private static final BlockPos LANDING_POS = new BlockPos(0, 57, 0);
+    // Y=100 is safely above any noise-terrain surface (~64-80).
+    // Player will fall onto the netherite-block surface on entry.
+    private static final BlockPos LANDING_POS = new BlockPos(0, 100, 0);
 
     public DimensionalKeyItem(Properties properties) {
         super(properties);
