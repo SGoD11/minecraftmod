@@ -1,0 +1,14 @@
+{
+  "structures": [
+    {
+      "structure": "zombieassasian:netherite_pillar",
+      "weight": 1
+    }
+  ],
+  "placement": {
+    "type": "minecraft:random_spread",
+    "spacing": 4,
+    "separation": 2,
+    "salt": 552197734
+  }
+}

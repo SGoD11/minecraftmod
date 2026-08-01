@@ -30,6 +30,7 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'geckolib.disable_examples', 'true'
             mods {
                 zombieassasian {
                     source sourceSets.main
@@ -41,6 +42,7 @@ minecraft {
             workingDirectory project.file('run')
             property 'forge.logging.markers', 'REGISTRIES'
             property 'forge.logging.console.level', 'debug'
+            property 'geckolib.disable_examples', 'true'
             mods {
                 zombieassasian {
                     source sourceSets.main

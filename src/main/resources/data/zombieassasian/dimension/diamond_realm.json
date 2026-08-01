@@ -3,7 +3,7 @@
   "generator": {
     "type": "minecraft:flat",
     "settings": {
-      "biome": "minecraft:nether_wastes",
+      "biome": "zombieassasian:diamond_biome",
       "lakes": false,
       "features": false,
       "layers": [
