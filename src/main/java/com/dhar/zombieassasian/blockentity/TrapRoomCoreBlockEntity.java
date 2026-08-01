@@ -18,19 +18,18 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * FEATURE 8 — Trap Room Mechanism (Strict 10x10 Structure Required)
- * -------------------------------------------------------------------
+ * FEATURE 8 — Trap Room Mechanism (10x10 Structure Required)
+ * -------------------------------------------------------------
  * Requirements:
  * 1. The trap ONLY activates when ALL 36 blocks of the 10x10 boundary are placed.
- *    If even one block of the boundary is missing, no anvils will ever fall.
  * 2. Anvils MUST ONLY fall inside the 10x10 inner room boundary.
- *    Even if a player quickly enters and exits, anvils are clamped strictly
- *    to the interior room space and NEVER spawn or land outside the boundary.
+ * 3. Any living entity (players, mobs, creatures) inside the trap room receives damage.
  */
 public class TrapRoomCoreBlockEntity extends BlockEntity {
 
     private static final int COOLDOWN_TICKS = 40; // 2 seconds between anvil drops per entity
     private static final int EXACT_PERIMETER_BLOCKS = 36; // Strict: ALL 36 boundary blocks of the 10x10 square are required
+    private static final float ANVIL_TRAP_DAMAGE = 6.0F; // 3 hearts damage per drop
 
     private final Map<UUID, Integer> entityCooldowns = new HashMap<>();
 
@@ -68,7 +67,7 @@ public class TrapRoomCoreBlockEntity extends BlockEntity {
                 continue; // Still on cooldown
             }
 
-            spawnFallingAnvil(level, roomData, entity);
+            spawnFallingAnvilAndDamage(level, roomData, entity);
             blockEntity.entityCooldowns.put(id, COOLDOWN_TICKS);
         }
     }
@@ -129,7 +128,7 @@ public class TrapRoomCoreBlockEntity extends BlockEntity {
         return level.getBlockState(checkPos).is(ModRegistries.TRAP_ROOM_CORE.get());
     }
 
-    private static void spawnFallingAnvil(Level level, RoomData room, LivingEntity entity) {
+    private static void spawnFallingAnvilAndDamage(Level level, RoomData room, LivingEntity entity) {
         // Clamp anvil spawn coordinates strictly to the inner 8x8 area (ox+1 to ox+8, oz+1 to oz+8)
         int clampedX = Math.max(room.originX + 1, Math.min(room.originX + 8, entity.getBlockX()));
         int clampedZ = Math.max(room.originZ + 1, Math.min(room.originZ + 8, entity.getBlockZ()));
@@ -137,8 +136,12 @@ public class TrapRoomCoreBlockEntity extends BlockEntity {
 
         BlockPos spawnPos = new BlockPos(clampedX, spawnY, clampedZ);
 
-        // Spawn falling anvil entity
-        FallingBlockEntity.fall(level, spawnPos, Blocks.ANVIL.defaultBlockState());
+        // Spawn falling anvil entity configured to hurt entities
+        FallingBlockEntity fallingBlock = FallingBlockEntity.fall(level, spawnPos, Blocks.ANVIL.defaultBlockState());
+        fallingBlock.setHurtsEntities(2.0F, 40);
+
+        // Instantly deal anvil damage to any player, mob, or creature inside the trap room
+        entity.hurt(level.damageSources().anvil(fallingBlock), ANVIL_TRAP_DAMAGE);
 
         // Sound effect
         level.playSound(null, spawnPos, SoundEvents.ANVIL_PLACE, SoundSource.BLOCKS, 1.0F, 0.9F);
