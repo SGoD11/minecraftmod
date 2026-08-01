@@ -2,8 +2,10 @@ package com.dhar.zombieassasian.blockentity;
 
 import com.dhar.zombieassasian.register.ModRegistries;
 import net.minecraft.core.BlockPos;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.item.FallingBlockEntity;
-import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -16,30 +18,21 @@ import java.util.Map;
 import java.util.UUID;
 
 /**
- * FEATURE 8 — Trap Room
- * -----------------------
- * Requirement: whenever a player occupies any position inside a 10x10 room,
- * an anvil falls directly above them; this must never happen outside the
- * designated room.
- *
- * Design: placing this block defines the room. Its footprint is a strict
- * 10x10 XZ square centered on this block (5 blocks each direction), and 5
- * blocks tall starting at this block's Y level. A player is only ever
- * checked against THIS exact bounding box — nothing outside it can trigger
- * an anvil, satisfying "must never occur outside the designated room."
- *
- * A per-player cooldown (COOLDOWN_TICKS) stops it from raining anvils every
- * single tick while someone just stands there — one anvil, then a breather,
- * as long as they're still inside.
+ * FEATURE 8 — Trap Room Mechanism (Strict 10x10 Structure Required)
+ * -------------------------------------------------------------------
+ * Requirements:
+ * 1. The trap ONLY activates when ALL 36 blocks of the 10x10 boundary are placed.
+ *    If even one block of the boundary is missing, no anvils will ever fall.
+ * 2. Anvils MUST ONLY fall inside the 10x10 inner room boundary.
+ *    Even if a player quickly enters and exits, anvils are clamped strictly
+ *    to the interior room space and NEVER spawn or land outside the boundary.
  */
 public class TrapRoomCoreBlockEntity extends BlockEntity {
 
-    private static final int ROOM_HALF_WIDTH = 5; // 5 + 5 = 10 blocks wide on each horizontal axis
-    private static final int ROOM_HEIGHT = 5;
-    private static final int COOLDOWN_TICKS = 30; // 1.5 seconds between anvil drops per player (20 ticks/sec)
-    private static final int ANVIL_SPAWN_HEIGHT_ABOVE_PLAYER = 6;
+    private static final int COOLDOWN_TICKS = 40; // 2 seconds between anvil drops per entity
+    private static final int EXACT_PERIMETER_BLOCKS = 36; // Strict: ALL 36 boundary blocks of the 10x10 square are required
 
-    private final Map<UUID, Integer> playerCooldowns = new HashMap<>();
+    private final Map<UUID, Integer> entityCooldowns = new HashMap<>();
 
     public TrapRoomCoreBlockEntity(BlockPos pos, BlockState state) {
         super(ModRegistries.TRAP_ROOM_CORE_ENTITY.get(), pos, state);
@@ -50,29 +43,104 @@ public class TrapRoomCoreBlockEntity extends BlockEntity {
             return;
         }
 
-        AABB roomBounds = new AABB(
-                pos.getX() - ROOM_HALF_WIDTH, pos.getY(), pos.getZ() - ROOM_HALF_WIDTH,
-                pos.getX() + ROOM_HALF_WIDTH + 1, pos.getY() + ROOM_HEIGHT, pos.getZ() + ROOM_HALF_WIDTH + 1
-        );
+        // Search for a 100% complete 10x10 perimeter structure containing this block
+        RoomData roomData = findComplete10x10Room(level, pos);
+        if (roomData == null) {
+            // Incomplete boundary or single block — DO NOTHING!
+            return;
+        }
 
-        List<Player> playersInRoom = level.getEntitiesOfClass(Player.class, roomBounds);
+        // Decrement active cooldowns
+        blockEntity.entityCooldowns.replaceAll((uuid, ticksLeft) -> ticksLeft - 1);
+        blockEntity.entityCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
 
-        // Tick down every active cooldown by 1, dropping any that hit zero.
-        blockEntity.playerCooldowns.replaceAll((uuid, ticksLeft) -> ticksLeft - 1);
-        blockEntity.playerCooldowns.entrySet().removeIf(entry -> entry.getValue() <= 0);
+        // Search only inside the strictly inner 8x8 room bounds (excluding boundary blocks)
+        List<LivingEntity> insideEntities = level.getEntitiesOfClass(LivingEntity.class, roomData.interiorBox);
 
-        for (Player player : playersInRoom) {
-            UUID id = player.getUUID();
-            if (blockEntity.playerCooldowns.containsKey(id)) {
-                continue; // still on cooldown from a recent drop
+        for (LivingEntity entity : insideEntities) {
+            // STRICT INTERIOR CHECK: Entity's position MUST be strictly inside the inner room boundary
+            if (!roomData.interiorBox.contains(entity.position()) && !roomData.interiorBox.intersects(entity.getBoundingBox())) {
+                continue;
             }
-            spawnFallingAnvil(level, player);
-            blockEntity.playerCooldowns.put(id, COOLDOWN_TICKS);
+
+            UUID id = entity.getUUID();
+            if (blockEntity.entityCooldowns.containsKey(id)) {
+                continue; // Still on cooldown
+            }
+
+            spawnFallingAnvil(level, roomData, entity);
+            blockEntity.entityCooldowns.put(id, COOLDOWN_TICKS);
         }
     }
 
-    private static void spawnFallingAnvil(Level level, Player player) {
-        BlockPos spawnPos = player.blockPosition().above(ANVIL_SPAWN_HEIGHT_ABOVE_PLAYER);
+    private static class RoomData {
+        final int originX;
+        final int originY;
+        final int originZ;
+        final AABB interiorBox;
+
+        RoomData(int ox, int oy, int oz) {
+            this.originX = ox;
+            this.originY = oy;
+            this.originZ = oz;
+            // Interior is x: [ox + 1, ox + 9], z: [oz + 1, oz + 9] (strictly inside the 10x10 border)
+            this.interiorBox = new AABB(
+                    ox + 1.0D, oy, oz + 1.0D,
+                    ox + 9.0D, oy + 8.0D, oz + 9.0D
+            );
+        }
+    }
+
+    /**
+     * Checks if this block is part of a 100% complete 10x10 room boundary (36/36 blocks).
+     */
+    private static RoomData findComplete10x10Room(Level level, BlockPos pos) {
+        int posY = pos.getY();
+
+        for (int ox = pos.getX() - 9; ox <= pos.getX(); ox++) {
+            for (int oz = pos.getZ() - 9; oz <= pos.getZ(); oz++) {
+
+                int matchingPerimeterCount = 0;
+
+                // Check all 36 border positions of the 10x10 square
+                for (int i = 0; i < 10; i++) {
+                    // Top & Bottom edges (10 + 10)
+                    if (isTrapBlock(level, ox + i, posY, oz)) matchingPerimeterCount++;
+                    if (isTrapBlock(level, ox + i, posY, oz + 9)) matchingPerimeterCount++;
+
+                    // Left & Right inner edges (8 + 8)
+                    if (i > 0 && i < 9) {
+                        if (isTrapBlock(level, ox, posY, oz + i)) matchingPerimeterCount++;
+                        if (isTrapBlock(level, ox + 9, posY, oz + i)) matchingPerimeterCount++;
+                    }
+                }
+
+                // STRICT: Require ALL 36 boundary blocks to be present
+                if (matchingPerimeterCount >= EXACT_PERIMETER_BLOCKS) {
+                    return new RoomData(ox, posY, oz);
+                }
+            }
+        }
+        return null;
+    }
+
+    private static boolean isTrapBlock(Level level, int x, int y, int z) {
+        BlockPos checkPos = new BlockPos(x, y, z);
+        return level.getBlockState(checkPos).is(ModRegistries.TRAP_ROOM_CORE.get());
+    }
+
+    private static void spawnFallingAnvil(Level level, RoomData room, LivingEntity entity) {
+        // Clamp anvil spawn coordinates strictly to the inner 8x8 area (ox+1 to ox+8, oz+1 to oz+8)
+        int clampedX = Math.max(room.originX + 1, Math.min(room.originX + 8, entity.getBlockX()));
+        int clampedZ = Math.max(room.originZ + 1, Math.min(room.originZ + 8, entity.getBlockZ()));
+        int spawnY = Math.min((int) Math.floor(entity.getY()) + 5, room.originY + 7);
+
+        BlockPos spawnPos = new BlockPos(clampedX, spawnY, clampedZ);
+
+        // Spawn falling anvil entity
         FallingBlockEntity.fall(level, spawnPos, Blocks.ANVIL.defaultBlockState());
+
+        // Sound effect
+        level.playSound(null, spawnPos, SoundEvents.ANVIL_PLACE, SoundSource.BLOCKS, 1.0F, 0.9F);
     }
 }
